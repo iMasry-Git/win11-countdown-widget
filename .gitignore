@@ -1,0 +1,7 @@
+﻿# Build outputs
+bin/
+*.log
+
+# OS metadata
+Thumbs.db
+Desktop.ini

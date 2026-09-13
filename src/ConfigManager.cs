@@ -20,8 +20,9 @@ namespace CountdownWidget
         public WidgetConfig()
         {
             EventName = "New Year's Eve";
-            int nextYear = DateTime.Today.Year + 1;
-            TargetDate = new DateTime(nextYear, 1, 1);
+            DateTime today = DateTime.Today;
+            DateTime newYearEve = new DateTime(today.Year, 12, 31);
+            TargetDate = today <= newYearEve ? newYearEve : new DateTime(today.Year + 1, 12, 31);
             WindowX = double.NaN;
             WindowY = double.NaN;
             IsLocked = false;

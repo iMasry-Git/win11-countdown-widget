@@ -293,8 +293,9 @@ namespace CountdownWidget
 
         private void SetToNewYear()
         {
-            int nextYear = DateTime.Today.Year + 1;
-            _dpDate.SelectedDate = new DateTime(nextYear, 1, 1);
+            DateTime today = DateTime.Today;
+            DateTime newYearEve = new DateTime(today.Year, 12, 31);
+            _dpDate.SelectedDate = today <= newYearEve ? newYearEve : new DateTime(today.Year + 1, 12, 31);
             UpdatePreview();
         }
 

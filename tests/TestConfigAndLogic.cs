@@ -106,6 +106,33 @@ namespace CountdownWidget.Tests
                 failed++;
             }
 
+            // Test 5: Default Event and Date
+            try
+            {
+                var cfg = new WidgetConfig();
+                DateTime today = DateTime.Today;
+                DateTime expectedTarget = today <= new DateTime(today.Year, 12, 31) ? new DateTime(today.Year, 12, 31) : new DateTime(today.Year + 1, 12, 31);
+                if (cfg.EventName != "New Year's Eve")
+                {
+                    Console.WriteLine("FAIL: Default EventName is not New Year's Eve: " + cfg.EventName);
+                    failed++;
+                }
+                else if (cfg.TargetDate.Date != expectedTarget)
+                {
+                    Console.WriteLine("FAIL: Default TargetDate mismatch: " + cfg.TargetDate + " expected: " + expectedTarget);
+                    failed++;
+                }
+                else
+                {
+                    Console.WriteLine("PASS: Default Event and TargetDate (New Year's Eve - Dec 31)");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("FAIL: " + ex.Message);
+                failed++;
+            }
+
             Console.WriteLine(failed == 0 ? "ALL TESTS PASSED!" : ("FAILED: " + failed));
             return failed;
         }

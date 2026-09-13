@@ -164,7 +164,7 @@ namespace CountdownWidget
             {
                 g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-                using (var brush = new SolidBrush(System.Drawing.Color.FromArgb(37, 99, 235)))
+                using (var brush = new SolidBrush(System.Drawing.Color.FromArgb(255, 108, 0)))
                 {
                     g.FillEllipse(brush, 1, 1, 30, 30);
                 }

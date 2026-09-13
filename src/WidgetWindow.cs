@@ -21,10 +21,11 @@ namespace CountdownWidget
         private HwndSource _hwndSource;
 
         private Border _rootBorder;
-        private TextBlock _txtEventName;
         private TextBlock _txtDaysNumber;
-        private TextBlock _txtDaysUnit;
+        private TextBlock _txtEventName;
         private TextBlock _txtTargetDate;
+        private TextBlock _txtDaysLine1;
+        private TextBlock _txtDaysLine2;
         private Button _btnLock;
 
         private ContextMenu _contextMenu;
@@ -62,8 +63,8 @@ namespace CountdownWidget
         private void InitializeComponent()
         {
             Title = "Desktop Countdown Widget";
-            Width = 230;
-            Height = 105;
+            Width = 300;
+            Height = 218;
             WindowStyle = WindowStyle.None;
             AllowsTransparency = true;
             Background = Brushes.Transparent;
@@ -76,103 +77,152 @@ namespace CountdownWidget
                 Background = _theme.BackgroundBrush,
                 BorderBrush = _theme.BorderBrush,
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(14),
-                Padding = new Thickness(14, 10, 14, 10),
+                CornerRadius = new CornerRadius(16),
+                Padding = new Thickness(16, 10, 16, 14),
                 Effect = new DropShadowEffect
                 {
                     Color = Colors.Black,
-                    BlurRadius = 16,
-                    ShadowDepth = 3,
-                    Opacity = 0.35
+                    BlurRadius = 24,
+                    ShadowDepth = 5,
+                    Opacity = 0.55
                 }
             };
 
             var mainGrid = new Grid();
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Header
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Countdown body
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(24, GridUnitType.Pixel) }); // Row 0: Top actions
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });   // Row 1: Content body
 
-            // --- HEADER ---
-            var headerGrid = new Grid { Margin = new Thickness(0, 0, 0, 4) };
-            headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var fontIcons = new FontFamily("Segoe MDL2 Assets, Segoe UI Symbol");
+            var fontBahnschrift = new FontFamily("Bahnschrift, Segoe UI, sans-serif");
 
-            var eventPanel = new StackPanel { Orientation = Orientation.Horizontal };
-            var icon = new TextBlock
+            // --- TOP ACTIONS BAR ---
+            var actionsPanel = new StackPanel
             {
-                Text = "📅",
-                FontSize = 11,
-                Margin = new Thickness(0, 0, 5, 0),
-                VerticalAlignment = VerticalAlignment.Center
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 2, 0)
             };
+
+            _btnLock = CreateIconButton(_config.IsLocked ? "\uE72E" : "\uE785", "Toggle Drag Lock", (s, e) => ToggleLock());
+            actionsPanel.Children.Add(_btnLock);
+
+            var btnEdit = CreateIconButton("\uE713", "Edit Event & Date", (s, e) => OpenSettings());
+            actionsPanel.Children.Add(btnEdit);
+
+            var btnClose = CreateIconButton("\uE8BB", "Close to Tray", (s, e) => Hide());
+            actionsPanel.Children.Add(btnClose);
+
+            Grid.SetRow(actionsPanel, 0);
+            mainGrid.Children.Add(actionsPanel);
+
+            // --- CONTENT BODY: LEFT (NUMBER) | DIVIDER | RIGHT (EVENT & DAYS LEFT) ---
+            var bodyGrid = new Grid();
+            bodyGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(125, GridUnitType.Pixel) });
+            bodyGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            bodyGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            // Huge Orange Number
+            _txtDaysNumber = new TextBlock
+            {
+                FontFamily = fontBahnschrift,
+                FontSize = 130,
+                FontWeight = FontWeights.Bold,
+                Foreground = _theme.AccentBrush,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, -6, 0, 0)
+            };
+            Grid.SetColumn(_txtDaysNumber, 0);
+            bodyGrid.Children.Add(_txtDaysNumber);
+
+            // Subtle Vertical Divider
+            var divider = new Border
+            {
+                Width = 1,
+                Background = _theme.DividerBrush,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Margin = new Thickness(4, 2, 12, 2)
+            };
+            Grid.SetColumn(divider, 1);
+            bodyGrid.Children.Add(divider);
+
+            // Right Column: Top Info + Bottom DAYS LEFT
+            var rightGrid = new Grid();
+            rightGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            rightGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+            // Top Info: Event Title & Date
+            var topInfo = new StackPanel { VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 0, 0, 0) };
+
             _txtEventName = new TextBlock
             {
-                FontSize = 12,
+                FontFamily = fontBahnschrift,
+                FontSize = 21,
                 FontWeight = FontWeights.Bold,
                 Foreground = _theme.TextPrimaryBrush,
                 TextTrimming = TextTrimming.CharacterEllipsis,
-                MaxWidth = 145,
-                VerticalAlignment = VerticalAlignment.Center
+                Margin = new Thickness(0, 0, 0, 2)
             };
-            eventPanel.Children.Add(icon);
-            eventPanel.Children.Add(_txtEventName);
-            Grid.SetColumn(eventPanel, 0);
+            topInfo.Children.Add(_txtEventName);
 
-            var actionsPanel = new StackPanel { Orientation = Orientation.Horizontal };
-
-            _btnLock = CreateIconButton(_config.IsLocked ? "🔒" : "🔓", "Toggle Drag Lock", (s, e) => ToggleLock());
-            actionsPanel.Children.Add(_btnLock);
-
-            var btnEdit = CreateIconButton("⚙️", "Edit Event & Date", (s, e) => OpenSettings());
-            actionsPanel.Children.Add(btnEdit);
-
-            var btnClose = CreateIconButton("✕", "Close to Tray", (s, e) => Hide());
-            actionsPanel.Children.Add(btnClose);
-
-            Grid.SetColumn(actionsPanel, 1);
-
-            headerGrid.Children.Add(eventPanel);
-            headerGrid.Children.Add(actionsPanel);
-            Grid.SetRow(headerGrid, 0);
-
-            // --- COUNTDOWN BODY ---
-            var countdownGrid = new Grid { VerticalAlignment = VerticalAlignment.Center };
-            countdownGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            countdownGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-            _txtDaysNumber = new TextBlock
+            var datePanel = new StackPanel { Orientation = Orientation.Horizontal };
+            var calIcon = new TextBlock
             {
-                FontSize = 38,
-                FontWeight = FontWeights.ExtraBold,
-                Foreground = _theme.AccentBrush,
-                Margin = new Thickness(0, -5, 10, 0),
+                Text = "\uE787",
+                FontFamily = fontIcons,
+                FontSize = 12,
+                Foreground = _theme.TextSecondaryBrush,
+                Margin = new Thickness(0, 1, 5, 0),
                 VerticalAlignment = VerticalAlignment.Center
-            };
-            Grid.SetColumn(_txtDaysNumber, 0);
-
-            var metaPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            _txtDaysUnit = new TextBlock
-            {
-                FontSize = 11,
-                FontWeight = FontWeights.Bold,
-                Foreground = _theme.TextPrimaryBrush,
-                Margin = new Thickness(0, 0, 0, 1)
             };
             _txtTargetDate = new TextBlock
             {
-                FontSize = 10,
+                FontFamily = fontBahnschrift,
+                FontSize = 12,
                 Foreground = _theme.TextSecondaryBrush,
-                TextTrimming = TextTrimming.CharacterEllipsis
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                VerticalAlignment = VerticalAlignment.Center
             };
-            metaPanel.Children.Add(_txtDaysUnit);
-            metaPanel.Children.Add(_txtTargetDate);
-            Grid.SetColumn(metaPanel, 1);
+            datePanel.Children.Add(calIcon);
+            datePanel.Children.Add(_txtTargetDate);
+            topInfo.Children.Add(datePanel);
 
-            countdownGrid.Children.Add(_txtDaysNumber);
-            countdownGrid.Children.Add(metaPanel);
-            Grid.SetRow(countdownGrid, 1);
+            Grid.SetRow(topInfo, 0);
+            rightGrid.Children.Add(topInfo);
 
-            mainGrid.Children.Add(headerGrid);
-            mainGrid.Children.Add(countdownGrid);
+            // Bottom Stacked Text: DAYS / LEFT
+            var bottomText = new StackPanel { VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, 0) };
+
+            _txtDaysLine1 = new TextBlock
+            {
+                Text = "DAYS",
+                FontFamily = fontBahnschrift,
+                FontSize = 38,
+                FontWeight = FontWeights.Bold,
+                Foreground = _theme.TextPrimaryBrush,
+                Margin = new Thickness(0, 0, 0, -6)
+            };
+            _txtDaysLine2 = new TextBlock
+            {
+                Text = "LEFT",
+                FontFamily = fontBahnschrift,
+                FontSize = 38,
+                FontWeight = FontWeights.Bold,
+                Foreground = _theme.TextPrimaryBrush,
+                Margin = new Thickness(0, -6, 0, 0)
+            };
+            bottomText.Children.Add(_txtDaysLine1);
+            bottomText.Children.Add(_txtDaysLine2);
+
+            Grid.SetRow(bottomText, 1);
+            rightGrid.Children.Add(bottomText);
+
+            Grid.SetColumn(rightGrid, 2);
+            bodyGrid.Children.Add(rightGrid);
+
+            Grid.SetRow(bodyGrid, 1);
+            mainGrid.Children.Add(bodyGrid);
 
             _rootBorder.Child = mainGrid;
             Content = _rootBorder;
@@ -190,7 +240,6 @@ namespace CountdownWidget
             _hwnd = new WindowInteropHelper(this).Handle;
             if (_hwnd != IntPtr.Zero)
             {
-                // Hook WndProc to keep window strictly at bottom of z-order
                 _hwndSource = HwndSource.FromHwnd(_hwnd);
                 if (_hwndSource != null)
                 {
@@ -221,21 +270,42 @@ namespace CountdownWidget
             }
         }
 
-        private Button CreateIconButton(string icon, string tooltip, RoutedEventHandler onClick)
+        private Button CreateIconButton(string glyph, string tooltip, RoutedEventHandler onClick)
         {
             var btn = new Button
             {
-                Content = icon,
-                Width = 20,
+                Content = new TextBlock
+                {
+                    Text = glyph,
+                    FontFamily = new FontFamily("Segoe MDL2 Assets, Segoe UI Symbol"),
+                    FontSize = 11,
+                    Foreground = _theme.TextSecondaryBrush,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                },
+                Width = 22,
                 Height = 20,
-                Margin = new Thickness(2, 0, 0, 0),
+                Margin = new Thickness(4, 0, 0, 0),
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
-                Foreground = Brushes.White,
-                FontSize = 9,
                 Cursor = Cursors.Hand,
                 ToolTip = tooltip
             };
+
+            btn.MouseEnter += (s, e) =>
+            {
+                btn.Background = new SolidColorBrush(Color.FromArgb(35, 255, 255, 255));
+                var tb = btn.Content as TextBlock;
+                if (tb != null) tb.Foreground = _theme.TextPrimaryBrush;
+            };
+
+            btn.MouseLeave += (s, e) =>
+            {
+                btn.Background = Brushes.Transparent;
+                var tb = btn.Content as TextBlock;
+                if (tb != null) tb.Foreground = _theme.TextSecondaryBrush;
+            };
+
             btn.Click += onClick;
             return btn;
         }
@@ -254,10 +324,7 @@ namespace CountdownWidget
                 IsCheckable = true,
                 IsChecked = _config.IsLocked
             };
-            _miLock.Click += (s, e) =>
-            {
-                ToggleLock();
-            };
+            _miLock.Click += (s, e) => ToggleLock();
             _contextMenu.Items.Add(_miLock);
 
             _miStartup = new MenuItem
@@ -298,21 +365,39 @@ namespace CountdownWidget
 
             _txtTargetDate.Text = target.ToString("ddd, MMM d, yyyy");
 
-            if (days > 0)
+            int absDays = Math.Abs(days);
+
+            // Dynamic number sizing for 1-2 digits, 3 digits, or 4+ digits
+            if (absDays >= 1000)
             {
-                _txtDaysNumber.Text = days.ToString();
-                _txtDaysUnit.Text = days == 1 ? "DAY LEFT" : "DAYS LEFT";
+                _txtDaysNumber.FontSize = 58;
             }
-            else if (days == 0)
+            else if (absDays >= 100)
             {
-                _txtDaysNumber.Text = "🎉";
-                _txtDaysUnit.Text = "TODAY!";
+                _txtDaysNumber.FontSize = 85;
             }
             else
             {
-                int past = Math.Abs(days);
-                _txtDaysNumber.Text = past.ToString();
-                _txtDaysUnit.Text = past == 1 ? "DAY AGO" : "DAYS AGO";
+                _txtDaysNumber.FontSize = 130;
+            }
+
+            if (days > 0)
+            {
+                _txtDaysNumber.Text = days.ToString();
+                _txtDaysLine1.Text = days == 1 ? "DAY" : "DAYS";
+                _txtDaysLine2.Text = "LEFT";
+            }
+            else if (days == 0)
+            {
+                _txtDaysNumber.Text = "0";
+                _txtDaysLine1.Text = "EVENT";
+                _txtDaysLine2.Text = "TODAY!";
+            }
+            else
+            {
+                _txtDaysNumber.Text = absDays.ToString();
+                _txtDaysLine1.Text = absDays == 1 ? "DAY" : "DAYS";
+                _txtDaysLine2.Text = "AGO";
             }
         }
 
@@ -328,9 +413,21 @@ namespace CountdownWidget
         private void ToggleLock()
         {
             _config.IsLocked = !_config.IsLocked;
-            _btnLock.Content = _config.IsLocked ? "🔒" : "🔓";
+            UpdateLockIcon();
             UpdateContextMenuState();
             ConfigManager.Save(_config);
+        }
+
+        private void UpdateLockIcon()
+        {
+            if (_btnLock != null)
+            {
+                var tb = _btnLock.Content as TextBlock;
+                if (tb != null)
+                {
+                    tb.Text = _config.IsLocked ? "\uE72E" : "\uE785";
+                }
+            }
         }
 
         private void RestorePosition()
@@ -374,7 +471,7 @@ namespace CountdownWidget
             if (settings.IsSaved)
             {
                 UpdateCountdown();
-                _btnLock.Content = _config.IsLocked ? "🔒" : "🔓";
+                UpdateLockIcon();
                 UpdateContextMenuState();
             }
             EnsureDesktopLayer();

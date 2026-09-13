@@ -11,6 +11,7 @@ namespace CountdownWidget
         // Widget Card Brushes
         public Brush BackgroundBrush { get; set; }
         public Brush BorderBrush { get; set; }
+        public Brush DividerBrush { get; set; }
         public Brush AccentBrush { get; set; }
         public Brush TextPrimaryBrush { get; set; }
         public Brush TextSecondaryBrush { get; set; }
@@ -32,22 +33,23 @@ namespace CountdownWidget
         {
             return new WidgetTheme
             {
-                Name = "DarkGrey",
-                DisplayName = "Dark Grey & White",
-                BackgroundBrush = new SolidColorBrush(Color.FromArgb(235, 34, 34, 38)), // Frosted Dark Grey #222226
-                BorderBrush = new SolidColorBrush(Color.FromArgb(50, 255, 255, 255)),   // Subtle rim
-                AccentBrush = new SolidColorBrush(Color.FromRgb(255, 255, 255)),        // Pure White
+                Name = "DarkOrange",
+                DisplayName = "Dark Charcoal & Vivid Orange",
+                BackgroundBrush = new SolidColorBrush(Color.FromRgb(34, 35, 38)),        // Dark Slate #222326
+                BorderBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),   // Subtle rim
+                DividerBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),  // 1px vertical divider
+                AccentBrush = new SolidColorBrush(Color.FromRgb(255, 108, 0)),           // Vivid Electric Orange #FF6C00
                 TextPrimaryBrush = new SolidColorBrush(Color.FromRgb(255, 255, 255)),   // Pure White
-                TextSecondaryBrush = new SolidColorBrush(Color.FromRgb(212, 212, 216)), // Soft Light Grey #D4D4D8
-                TextMutedBrush = new SolidColorBrush(Color.FromRgb(158, 158, 168)),     // Muted Grey
+                TextSecondaryBrush = new SolidColorBrush(Color.FromRgb(165, 170, 182)), // Soft Light Grey #A5AAB6
+                TextMutedBrush = new SolidColorBrush(Color.FromRgb(130, 134, 146)),     // Muted Slate Grey
 
-                DialogBackgroundBrush = new SolidColorBrush(Color.FromRgb(30, 30, 34)), // Dark Grey Dialog
-                DialogBorderBrush = new SolidColorBrush(Color.FromArgb(70, 255, 255, 255)),
-                InputBackgroundBrush = new SolidColorBrush(Color.FromRgb(42, 42, 48)),
-                ButtonBackgroundBrush = new SolidColorBrush(Color.FromRgb(50, 50, 56)),
-                ButtonPrimaryBrush = new SolidColorBrush(Color.FromRgb(70, 70, 80)),
-                SurfaceSubtleBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
-                PreviewBackgroundBrush = new SolidColorBrush(Color.FromArgb(100, 20, 20, 24))
+                DialogBackgroundBrush = new SolidColorBrush(Color.FromRgb(30, 31, 35)),
+                DialogBorderBrush = new SolidColorBrush(Color.FromArgb(60, 255, 255, 255)),
+                InputBackgroundBrush = new SolidColorBrush(Color.FromRgb(40, 42, 48)),
+                ButtonBackgroundBrush = new SolidColorBrush(Color.FromRgb(50, 52, 60)),
+                ButtonPrimaryBrush = new SolidColorBrush(Color.FromRgb(255, 108, 0)),   // Vivid Orange primary button
+                SurfaceSubtleBrush = new SolidColorBrush(Color.FromArgb(35, 255, 255, 255)),
+                PreviewBackgroundBrush = new SolidColorBrush(Color.FromArgb(120, 20, 21, 24))
             };
         }
     }

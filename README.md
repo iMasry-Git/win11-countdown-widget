@@ -23,8 +23,8 @@ It sits directly on your desktop wallpaper **underneath all open application win
 
 - 🖥️ **Desktop Wallpaper Layer**: Stays strictly on the desktop background under all open apps, browser windows, and games (`HWND_BOTTOM` z-order).
 - 📝 **Streamlined 2-Info Input**: Simple setup with just **Event Name** and **Target Date**—no time or hour setting required.
-- 📐 **Compact & Minimalist**: Small footprint (230 × 105 px) that tucks into any corner of your desktop.
-- 🎨 **Dark Grey & White Scheme**: Modern frosted dark grey acrylic card (`#222226`) with crisp white typography.
+- 📐 **Sleek Desktop Card**: Elegant 300 × 218 px card layout with dual-pane split view and vertical divider.
+- 🎨 **Dark Slate & Vivid Orange**: Modern dark slate card (`#222326`) with bold electric orange countdown typography (`#FF6C00`) and crisp white lettering.
 - 🎯 **Bold Countdown**: Displays clear remaining days (e.g. `45 DAYS LEFT` or `🎉 TODAY!`).
 - 🖱️ **Draggable Anywhere**: Click and drag to place the card anywhere across multi-monitor setups; position is automatically saved.
 - 🔒 **Position Lock**: One-click lock toggle (`🔒`/`🔓`) to prevent accidental movement.

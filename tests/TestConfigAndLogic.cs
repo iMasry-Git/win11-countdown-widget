@@ -42,14 +42,15 @@ namespace CountdownWidget.Tests
             try
             {
                 var theme = ThemeManager.GetDefaultTheme();
-                if (theme == null || theme.BackgroundBrush == null || theme.TextPrimaryBrush == null)
+                if (theme == null || theme.BackgroundBrush == null || theme.TextPrimaryBrush == null ||
+                    theme.DialogBackgroundBrush == null || theme.InputBackgroundBrush == null)
                 {
-                    Console.WriteLine("FAIL: Theme invalid");
+                    Console.WriteLine("FAIL: Theme invalid or missing semantic brushes");
                     failed++;
                 }
                 else
                 {
-                    Console.WriteLine("PASS: Theme is Dark Grey & White");
+                    Console.WriteLine("PASS: Theme is Dark Grey & White with semantic dialog brushes");
                 }
             }
             catch (Exception ex)

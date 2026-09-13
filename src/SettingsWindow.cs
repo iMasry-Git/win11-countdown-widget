@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -9,7 +10,9 @@ namespace CountdownWidget
 {
     public class SettingsWindow : Window
     {
-        private WidgetConfig _config;
+        private readonly WidgetConfig _config;
+        private readonly WidgetTheme _theme;
+
         private TextBox _txtEvent;
         private DatePicker _dpDate;
         private CheckBox _chkStartup;
@@ -17,18 +20,33 @@ namespace CountdownWidget
 
         public bool IsSaved { get; private set; }
 
-        public SettingsWindow(WidgetConfig config)
+        public SettingsWindow(WidgetConfig config, WidgetTheme theme = null)
         {
             _config = config;
+            _theme = theme ?? ThemeManager.GetDefaultTheme();
             InitializeComponent();
             PopulateValues();
+        }
+
+        private static string GetAppVersion()
+        {
+            try
+            {
+                Version v = Assembly.GetExecutingAssembly().GetName().Version;
+                if (v != null)
+                {
+                    return string.Format("v{0}.{1}.{2}", v.Major, v.Minor, v.Build);
+                }
+            }
+            catch {}
+            return "v1.1.0";
         }
 
         private void InitializeComponent()
         {
             Title = "Event Countdown Settings";
-            Width = 360;
-            Height = 350;
+            Width = 370;
+            Height = 360;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             WindowStyle = WindowStyle.None;
             AllowsTransparency = true;
@@ -37,8 +55,8 @@ namespace CountdownWidget
 
             var outerBorder = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(30, 30, 34)), // Dark Grey
-                BorderBrush = new SolidColorBrush(Color.FromArgb(70, 255, 255, 255)),
+                Background = _theme.DialogBackgroundBrush,
+                BorderBrush = _theme.DialogBorderBrush,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(14),
                 Padding = new Thickness(20, 16, 20, 16),
@@ -75,11 +93,30 @@ namespace CountdownWidget
                 Text = "Event Countdown",
                 FontSize = 16,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = Brushes.White,
+                Foreground = _theme.TextPrimaryBrush,
                 VerticalAlignment = VerticalAlignment.Center
             };
+
+            // Version badge in header
+            var versionBadge = new Border
+            {
+                Background = _theme.SurfaceSubtleBrush,
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(6, 2, 6, 2),
+                Margin = new Thickness(8, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                Child = new TextBlock
+                {
+                    Text = GetAppVersion(),
+                    FontSize = 10,
+                    FontWeight = FontWeights.Medium,
+                    Foreground = _theme.TextMutedBrush
+                }
+            };
+
             titlePanel.Children.Add(iconText);
             titlePanel.Children.Add(titleText);
+            titlePanel.Children.Add(versionBadge);
             Grid.SetColumn(titlePanel, 0);
 
             var closeBtn = new Button
@@ -88,7 +125,7 @@ namespace CountdownWidget
                 Width = 26,
                 Height = 26,
                 Background = Brushes.Transparent,
-                Foreground = new SolidColorBrush(Color.FromRgb(180, 180, 190)),
+                Foreground = _theme.TextMutedBrush,
                 BorderThickness = new Thickness(0),
                 FontSize = 13,
                 Cursor = Cursors.Hand
@@ -110,10 +147,11 @@ namespace CountdownWidget
             _txtEvent = new TextBox
             {
                 FontSize = 13,
+                MaxLength = 60,
                 Padding = new Thickness(8, 6, 8, 6),
-                Background = new SolidColorBrush(Color.FromRgb(42, 42, 48)),
-                Foreground = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromArgb(70, 255, 255, 255)),
+                Background = _theme.InputBackgroundBrush,
+                Foreground = _theme.TextPrimaryBrush,
+                BorderBrush = _theme.DialogBorderBrush,
                 BorderThickness = new Thickness(1),
                 Margin = new Thickness(0, 4, 0, 10)
             };
@@ -142,7 +180,7 @@ namespace CountdownWidget
             _chkStartup = new CheckBox
             {
                 Content = "Start automatically with Windows",
-                Foreground = new SolidColorBrush(Color.FromRgb(210, 210, 220)),
+                Foreground = _theme.TextSecondaryBrush,
                 FontSize = 12,
                 Margin = new Thickness(0, 4, 0, 0)
             };
@@ -153,8 +191,8 @@ namespace CountdownWidget
             // --- LIVE PREVIEW BOX ---
             var previewBorder = new Border
             {
-                Background = new SolidColorBrush(Color.FromArgb(100, 20, 20, 24)),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
+                Background = _theme.PreviewBackgroundBrush,
+                BorderBrush = _theme.BorderBrush,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(10, 8, 10, 8),
@@ -163,7 +201,7 @@ namespace CountdownWidget
             _lblPreview = new TextBlock
             {
                 Text = "Calculating...",
-                Foreground = Brushes.White,
+                Foreground = _theme.TextPrimaryBrush,
                 FontSize = 12,
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center
@@ -181,8 +219,8 @@ namespace CountdownWidget
                 Content = "Cancel",
                 Height = 32,
                 Margin = new Thickness(0, 0, 5, 0),
-                Background = new SolidColorBrush(Color.FromRgb(50, 50, 56)),
-                Foreground = Brushes.White,
+                Background = _theme.ButtonBackgroundBrush,
+                Foreground = _theme.TextPrimaryBrush,
                 BorderThickness = new Thickness(0),
                 FontSize = 12,
                 Cursor = Cursors.Hand
@@ -195,10 +233,10 @@ namespace CountdownWidget
                 Content = "Save & Apply",
                 Height = 32,
                 Margin = new Thickness(5, 0, 0, 0),
-                Background = new SolidColorBrush(Color.FromRgb(70, 70, 80)),
-                Foreground = Brushes.White,
+                Background = _theme.ButtonPrimaryBrush,
+                Foreground = _theme.TextPrimaryBrush,
                 BorderThickness = new Thickness(1),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(80, 255, 255, 255)),
+                BorderBrush = _theme.DialogBorderBrush,
                 FontWeight = FontWeights.SemiBold,
                 FontSize = 12,
                 Cursor = Cursors.Hand
@@ -224,7 +262,7 @@ namespace CountdownWidget
             return new TextBlock
             {
                 Text = text,
-                Foreground = new SolidColorBrush(Color.FromRgb(220, 220, 225)),
+                Foreground = _theme.TextSecondaryBrush,
                 FontSize = 12,
                 FontWeight = FontWeights.Medium
             };
@@ -237,8 +275,8 @@ namespace CountdownWidget
                 Content = label,
                 Padding = new Thickness(7, 3, 7, 3),
                 Margin = new Thickness(0, 0, 6, 2),
-                Background = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
-                Foreground = Brushes.White,
+                Background = _theme.SurfaceSubtleBrush,
+                Foreground = _theme.TextPrimaryBrush,
                 BorderThickness = new Thickness(0),
                 FontSize = 11,
                 Cursor = Cursors.Hand
@@ -295,14 +333,39 @@ namespace CountdownWidget
 
         private void SaveAndClose(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(_txtEvent.Text))
+            string eventName = _txtEvent.Text != null ? _txtEvent.Text.Trim() : "";
+
+            if (string.IsNullOrWhiteSpace(eventName))
             {
                 MessageBox.Show("Please enter an event name.", "Missing Event Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _txtEvent.Focus();
                 return;
             }
 
-            _config.EventName = _txtEvent.Text.Trim();
-            _config.TargetDate = (_dpDate.SelectedDate ?? DateTime.Today.AddDays(1)).Date;
+            if (eventName.Length > 60)
+            {
+                MessageBox.Show("Event name cannot exceed 60 characters.", "Event Name Too Long", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _txtEvent.Focus();
+                return;
+            }
+
+            if (!_dpDate.SelectedDate.HasValue)
+            {
+                MessageBox.Show("Please select a target date.", "Missing Date", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _dpDate.Focus();
+                return;
+            }
+
+            DateTime targetDate = _dpDate.SelectedDate.Value.Date;
+            if (targetDate.Year < 1900 || targetDate.Year > 2100)
+            {
+                MessageBox.Show("Please select a date between year 1900 and 2100.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _dpDate.Focus();
+                return;
+            }
+
+            _config.EventName = eventName;
+            _config.TargetDate = targetDate;
             _config.IsFirstRun = false;
             _config.StartWithWindows = _chkStartup.IsChecked == true;
 

@@ -18,13 +18,9 @@ namespace CountdownWidget
         [STAThread]
         public static void Main(string[] args)
         {
-            string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CountdownWidget");
-            if (!Directory.Exists(appData)) Directory.CreateDirectory(appData);
-            string logFile = Path.Combine(appData, "widget.log");
-
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {
-                File.AppendAllText(logFile, "Unhandled AppDomain: " + e.ExceptionObject.ToString() + Environment.NewLine);
+                Logger.LogError("Unhandled AppDomain", e.ExceptionObject as Exception);
             };
 
             bool isFirstInstance = true;
@@ -34,7 +30,7 @@ namespace CountdownWidget
             }
             catch (Exception ex)
             {
-                File.AppendAllText(logFile, "Mutex exception: " + ex.Message + Environment.NewLine);
+                Logger.LogError("Mutex acquisition failed", ex);
                 isFirstInstance = true;
             }
 
@@ -54,38 +50,31 @@ namespace CountdownWidget
                 var app = new Application();
                 app.DispatcherUnhandledException += (s, e) =>
                 {
-                    File.AppendAllText(logFile, "Dispatcher exception: " + e.Exception.ToString() + Environment.NewLine);
+                    Logger.LogError("Dispatcher exception", e.Exception);
                     e.Handled = true;
                 };
 
                 app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
                 _config = ConfigManager.Load();
-                File.AppendAllText(logFile, "Config loaded. Event: " + _config.EventName + Environment.NewLine);
 
                 _widgetWindow = new WidgetWindow(_config);
                 app.MainWindow = _widgetWindow;
-                File.AppendAllText(logFile, "WidgetWindow created" + Environment.NewLine);
 
                 SetupTrayIcon();
-                File.AppendAllText(logFile, "TrayIcon setup complete" + Environment.NewLine);
 
                 _widgetWindow.Show();
-                File.AppendAllText(logFile, "WidgetWindow shown" + Environment.NewLine);
 
                 if (_config.IsFirstRun)
                 {
-                    File.AppendAllText(logFile, "Opening settings dialog" + Environment.NewLine);
                     _widgetWindow.OpenSettings();
                 }
 
-                File.AppendAllText(logFile, "Entering app.Run dispatcher loop..." + Environment.NewLine);
                 app.Run();
-                File.AppendAllText(logFile, "app.Run exited cleanly." + Environment.NewLine);
             }
             catch (Exception ex)
             {
-                File.AppendAllText(logFile, "Main exception: " + ex.ToString() + Environment.NewLine);
+                Logger.LogError("Main execution failed", ex);
             }
             finally
             {
@@ -142,7 +131,14 @@ namespace CountdownWidget
             itemExit.Click += (s, e) =>
             {
                 _notifyIcon.Visible = false;
-                Application.Current.Shutdown();
+                if (_widgetWindow != null)
+                {
+                    _widgetWindow.CleanupAndExit();
+                }
+                else
+                {
+                    Application.Current.Shutdown();
+                }
             };
             contextMenu.Items.Add(itemExit);
 

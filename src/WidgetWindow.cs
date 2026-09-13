@@ -12,11 +12,13 @@ namespace CountdownWidget
 {
     public class WidgetWindow : Window
     {
-        private WidgetConfig _config;
-        private WidgetTheme _theme;
-        private DispatcherTimer _timer;
-        private DispatcherTimer _saveDebounceTimer;
+        private readonly WidgetConfig _config;
+        private readonly WidgetTheme _theme;
+        private readonly DispatcherTimer _timer;
+        private readonly DispatcherTimer _saveDebounceTimer;
+
         private IntPtr _hwnd = IntPtr.Zero;
+        private HwndSource _hwndSource;
 
         private Border _rootBorder;
         private TextBlock _txtEventName;
@@ -25,22 +27,26 @@ namespace CountdownWidget
         private TextBlock _txtTargetDate;
         private Button _btnLock;
 
+        private ContextMenu _contextMenu;
+        private MenuItem _miLock;
+        private MenuItem _miStartup;
+
         public WidgetWindow(WidgetConfig config)
         {
             _config = config;
             _theme = ThemeManager.GetDefaultTheme();
+
             InitializeComponent();
             RestorePosition();
             UpdateCountdown();
 
-            // Refresh countdown periodically
+            // Refresh countdown every minute to stay accurate across day boundaries
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMinutes(1);
             _timer.Tick += (s, e) => UpdateCountdown();
             _timer.Start();
 
-            // Debounce position saves: wait 500ms after the last move before writing to disk.
-            // This prevents hundreds of disk writes during a single DragMove() operation.
+            // Debounce position saves: wait 500ms after dragging stops before writing to disk
             _saveDebounceTimer = new DispatcherTimer();
             _saveDebounceTimer.Interval = TimeSpan.FromMilliseconds(500);
             _saveDebounceTimer.Tick += (s, e) =>
@@ -119,7 +125,7 @@ namespace CountdownWidget
             var btnEdit = CreateIconButton("⚙️", "Edit Event & Date", (s, e) => OpenSettings());
             actionsPanel.Children.Add(btnEdit);
 
-            var btnClose = CreateIconButton("✕", "Close to Tray", (s, e) => Close());
+            var btnClose = CreateIconButton("✕", "Close to Tray", (s, e) => Hide());
             actionsPanel.Children.Add(btnClose);
 
             Grid.SetColumn(actionsPanel, 1);
@@ -176,7 +182,7 @@ namespace CountdownWidget
             MouseDoubleClick += (s, e) => OpenSettings();
             LocationChanged += (s, e) => SavePosition();
 
-            ContextMenu = BuildContextMenu();
+            InitializeContextMenu();
         }
 
         private void OnSourceInitialized(object sender, EventArgs e)
@@ -185,10 +191,10 @@ namespace CountdownWidget
             if (_hwnd != IntPtr.Zero)
             {
                 // Hook WndProc to keep window strictly at bottom of z-order
-                HwndSource source = HwndSource.FromHwnd(_hwnd);
-                if (source != null)
+                _hwndSource = HwndSource.FromHwnd(_hwnd);
+                if (_hwndSource != null)
                 {
-                    source.AddHook(WndProc);
+                    _hwndSource.AddHook(WndProc);
                 }
 
                 EnsureDesktopLayer();
@@ -199,7 +205,7 @@ namespace CountdownWidget
         {
             if (msg == Win32Helper.WM_WINDOWPOSCHANGING)
             {
-                // Force window to always stay at bottom of z-order (under all windows)
+                // Force window to always stay at bottom of z-order (under all desktop windows)
                 Win32Helper.WINDOWPOS wp = (Win32Helper.WINDOWPOS)Marshal.PtrToStructure(lParam, typeof(Win32Helper.WINDOWPOS));
                 wp.hwndInsertAfter = Win32Helper.HWND_BOTTOM;
                 Marshal.StructureToPtr(wp, lParam, true);
@@ -234,53 +240,53 @@ namespace CountdownWidget
             return btn;
         }
 
-        private ContextMenu BuildContextMenu()
+        private void InitializeContextMenu()
         {
-            var menu = new ContextMenu();
+            _contextMenu = new ContextMenu();
 
             var miEdit = new MenuItem { Header = "✏️ Edit Event & Date..." };
             miEdit.Click += (s, e) => OpenSettings();
-            menu.Items.Add(miEdit);
+            _contextMenu.Items.Add(miEdit);
 
-            var miLock = new MenuItem
+            _miLock = new MenuItem
             {
                 Header = "🔒 Lock Position",
                 IsCheckable = true,
                 IsChecked = _config.IsLocked
             };
-            miLock.Click += (s, e) =>
+            _miLock.Click += (s, e) =>
             {
-                _config.IsLocked = miLock.IsChecked;
-                _btnLock.Content = _config.IsLocked ? "🔒" : "🔓";
-                ConfigManager.Save(_config);
+                ToggleLock();
             };
-            menu.Items.Add(miLock);
+            _contextMenu.Items.Add(_miLock);
 
-            var miStartup = new MenuItem
+            _miStartup = new MenuItem
             {
                 Header = "🚀 Start with Windows",
                 IsCheckable = true,
                 IsChecked = _config.StartWithWindows
             };
-            miStartup.Click += (s, e) =>
+            _miStartup.Click += (s, e) =>
             {
-                _config.StartWithWindows = miStartup.IsChecked;
+                _config.StartWithWindows = _miStartup.IsChecked;
                 Win32Helper.SetStartup(_config.StartWithWindows);
                 ConfigManager.Save(_config);
             };
-            menu.Items.Add(miStartup);
+            _contextMenu.Items.Add(_miStartup);
 
-            menu.Items.Add(new Separator());
+            _contextMenu.Items.Add(new Separator());
 
             var miExit = new MenuItem { Header = "❌ Exit Widget" };
-            miExit.Click += (s, e) =>
-            {
-                _timer.Stop();
-                Application.Current.Shutdown();
-            };
-            menu.Items.Add(miExit);
+            miExit.Click += (s, e) => CleanupAndExit();
+            _contextMenu.Items.Add(miExit);
 
-            return menu;
+            ContextMenu = _contextMenu;
+        }
+
+        private void UpdateContextMenuState()
+        {
+            if (_miLock != null) _miLock.IsChecked = _config.IsLocked;
+            if (_miStartup != null) _miStartup.IsChecked = _config.StartWithWindows;
         }
 
         public void UpdateCountdown()
@@ -323,8 +329,8 @@ namespace CountdownWidget
         {
             _config.IsLocked = !_config.IsLocked;
             _btnLock.Content = _config.IsLocked ? "🔒" : "🔓";
+            UpdateContextMenuState();
             ConfigManager.Save(_config);
-            ContextMenu = BuildContextMenu();
         }
 
         private void RestorePosition()
@@ -346,12 +352,9 @@ namespace CountdownWidget
         {
             if (WindowState == WindowState.Normal)
             {
-                // Update in-memory config immediately (cheap)
                 _config.WindowX = Left;
                 _config.WindowY = Top;
 
-                // Restart the debounce timer — only writes to disk once
-                // 500ms after the last position change (end of drag).
                 _saveDebounceTimer.Stop();
                 _saveDebounceTimer.Start();
             }
@@ -364,16 +367,52 @@ namespace CountdownWidget
 
         public void OpenSettings()
         {
-            var settings = new SettingsWindow(_config);
+            var settings = new SettingsWindow(_config, _theme);
             settings.Owner = this;
             settings.ShowDialog();
 
             if (settings.IsSaved)
             {
                 UpdateCountdown();
-                ContextMenu = BuildContextMenu();
+                _btnLock.Content = _config.IsLocked ? "🔒" : "🔓";
+                UpdateContextMenuState();
             }
             EnsureDesktopLayer();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            Cleanup();
+            base.OnClosed(e);
+        }
+
+        private void Cleanup()
+        {
+            if (_saveDebounceTimer != null)
+            {
+                if (_saveDebounceTimer.IsEnabled)
+                {
+                    _saveDebounceTimer.Stop();
+                    FlushPositionToDisk();
+                }
+            }
+
+            if (_timer != null)
+            {
+                _timer.Stop();
+            }
+
+            if (_hwndSource != null)
+            {
+                try { _hwndSource.RemoveHook(WndProc); } catch {}
+                _hwndSource = null;
+            }
+        }
+
+        public void CleanupAndExit()
+        {
+            Cleanup();
+            Application.Current.Shutdown();
         }
     }
 }

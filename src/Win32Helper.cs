@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 
@@ -68,6 +68,46 @@ namespace CountdownWidget
             {
                 Console.WriteLine("Error configuring startup registry: " + ex.Message);
             }
+        }
+
+        public static string FormatTrayTooltip(string eventName, DateTime targetDate, DateTime today)
+        {
+            int days = (int)(targetDate.Date - today.Date).TotalDays;
+
+            string statusText;
+            if (days > 0)
+            {
+                statusText = string.Format("{0} day{1} left", days, days == 1 ? "" : "s");
+            }
+            else if (days == 0)
+            {
+                statusText = "Today!";
+            }
+            else
+            {
+                int past = Math.Abs(days);
+                statusText = string.Format("{0} day{1} ago", past, past == 1 ? "" : "s");
+            }
+
+            string name = !string.IsNullOrEmpty(eventName) ? eventName : "Countdown Widget";
+            string fullText = string.Format("{0}: {1}", name, statusText);
+
+            // Windows Shell NotifyIcon.Text has a 63-character limit in .NET Framework WinForms
+            if (fullText.Length > 63)
+            {
+                int maxEventLen = 63 - statusText.Length - 5; // leave room for "...: "
+                if (maxEventLen > 3)
+                {
+                    string truncatedEvent = name.Substring(0, maxEventLen).TrimEnd() + "...";
+                    fullText = string.Format("{0}: {1}", truncatedEvent, statusText);
+                }
+                else
+                {
+                    fullText = fullText.Substring(0, 63);
+                }
+            }
+
+            return fullText;
         }
     }
 }

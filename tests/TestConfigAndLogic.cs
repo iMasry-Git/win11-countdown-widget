@@ -133,6 +133,44 @@ namespace CountdownWidget.Tests
                 failed++;
             }
 
+            // Test 6: Tray tooltip formatting & dynamic update logic
+            try
+            {
+                DateTime today = new DateTime(2026, 9, 13);
+                DateTime target = new DateTime(2026, 12, 31);
+                string tip = Win32Helper.FormatTrayTooltip("New Year's Eve", target, today);
+                if (tip != "New Year's Eve: 109 days left")
+                {
+                    Console.WriteLine("FAIL: Tray tooltip formatting mismatch: " + tip);
+                    failed++;
+                }
+                else
+                {
+                    // Test 63-character truncation protection for WinForms shell limit
+                    string longName = "A Very Long Event Name That Exceeds The Windows Shell NotifyIcon Tooltip Limit";
+                    string longTip = Win32Helper.FormatTrayTooltip(longName, target, today);
+                    if (longTip.Length > 63)
+                    {
+                        Console.WriteLine("FAIL: Tray tooltip exceeds 63 characters: " + longTip.Length);
+                        failed++;
+                    }
+                    else if (!longTip.EndsWith("109 days left"))
+                    {
+                        Console.WriteLine("FAIL: Truncated tooltip lost status text: " + longTip);
+                        failed++;
+                    }
+                    else
+                    {
+                        Console.WriteLine("PASS: Dynamic tray tooltip formatting and 63-char truncation safety");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("FAIL: " + ex.Message);
+                failed++;
+            }
+
             Console.WriteLine(failed == 0 ? "ALL TESTS PASSED!" : ("FAILED: " + failed));
             return failed;
         }

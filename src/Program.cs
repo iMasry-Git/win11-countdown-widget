@@ -96,7 +96,7 @@ namespace CountdownWidget
         {
             _notifyIcon = new Forms.NotifyIcon();
             _notifyIcon.Icon = GenerateTrayIcon();
-            _notifyIcon.Text = "Countdown Widget: " + TruncateString(_config.EventName, 40);
+            UpdateTrayToolTip(_config.EventName, _config.TargetDate);
             _notifyIcon.Visible = true;
 
             var contextMenu = new Forms.ContextMenuStrip();
@@ -152,6 +152,19 @@ namespace CountdownWidget
                     _widgetWindow.Activate();
                 }
             };
+        }
+
+        public static void UpdateTrayToolTip(string eventName, DateTime targetDate)
+        {
+            if (_notifyIcon == null) return;
+            try
+            {
+                _notifyIcon.Text = Win32Helper.FormatTrayTooltip(eventName, targetDate, DateTime.Today);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to update tray tooltip", ex);
+            }
         }
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]

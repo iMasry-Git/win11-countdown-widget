@@ -399,6 +399,9 @@ namespace CountdownWidget
                 _txtDaysLine1.Text = absDays == 1 ? "DAY" : "DAYS";
                 _txtDaysLine2.Text = "AGO";
             }
+
+            // Synchronize tray icon hover tooltip with updated event name and remaining days
+            Program.UpdateTrayToolTip(_config.EventName, target);
         }
 
         private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

@@ -2,10 +2,10 @@
 
 # ⏱️ Windows 11 Desktop Countdown Widget
 
-A sleek, lightweight desktop gadget designed for Windows 11 & Windows 10.  
+A sleek, lightweight desktop gadget designed for Windows 11.  
 It sits directly on your desktop wallpaper **underneath all open application windows**, showing how many days remain until your event.
 
-[![Platform](https://img.shields.io/badge/Platform-Windows%2011%20%7C%2010-0078D4?logo=windows)](https://github.com/iMasry-Git/win11-countdown-widget)
+[![Platform](https://img.shields.io/badge/Platform-Windows%2011-0078D4?logo=windows)](https://github.com/iMasry-Git/win11-countdown-widget)
 [![Framework](https://img.shields.io/badge/.NET%20Framework-4.8%2B-512BD4?logo=dotnet)](https://dotnet.microsoft.com/download/dotnet-framework/net48)
 [![Release: v1.2.0](https://img.shields.io/badge/Release-v1.2.0-blue?logo=github)](https://github.com/iMasry-Git/win11-countdown-widget/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
@@ -23,7 +23,7 @@ It sits directly on your desktop wallpaper **underneath all open application win
 
 - 🖥️ **Desktop Wallpaper Layer**: Stays strictly on the desktop background under all open apps, browser windows, and games (`HWND_BOTTOM` z-order).
 - 📝 **Streamlined 2-Info Input**: Simple setup with just **Event Name** and **Target Date**—no time or hour setting required.
-- 📐 **Sleek Desktop Card**: Compact 225 × 160 px card layout with dual-pane split view and vertical divider.
+- 📐 **Sleek Desktop Card**: Compact 225 × 128 px card layout with dual-pane split view and vertical divider.
 - 🎨 **Dark Slate & Vivid Orange**: Modern dark slate card (`#222326`) with bold electric orange countdown typography (`#FF6C00`) and crisp white lettering.
 - 🎯 **Bold Countdown**: Displays clear remaining days (e.g. `45 DAYS LEFT` or `🎉 TODAY!`).
 - 🖱️ **Draggable Anywhere**: Click and drag to place the card anywhere across multi-monitor setups; position is automatically saved.
@@ -68,9 +68,9 @@ Pre-built binaries and distribution packages are available in the [`dist/`](dist
 
 ## ⚙️ Prerequisites
 
-- **Operating System**: Windows 11 or Windows 10 (Version 1607+).
+- **Operating System**: Windows 11 (all editions).
 - **Runtime**: Microsoft .NET Framework 4.6.2, 4.7.x, or 4.8.
-  - *.NET Framework 4.8 comes pre-installed on virtually all Windows 10/11 installations.*
+  - *.NET Framework 4.8 comes pre-installed on Windows 11.*
   - If missing on custom stripped editions, install it via:
     ```cmd
     winget install Microsoft.DotNet.Framework.DeveloperPack_4

@@ -64,7 +64,7 @@ namespace CountdownWidget
         {
             Title = "Desktop Countdown Widget";
             Width = 225;
-            Height = 160;
+            Height = 128;
             WindowStyle = WindowStyle.None;
             AllowsTransparency = true;
             Background = Brushes.Transparent;
@@ -77,19 +77,19 @@ namespace CountdownWidget
                 Background = _theme.BackgroundBrush,
                 BorderBrush = _theme.BorderBrush,
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(14),
-                Padding = new Thickness(12, 8, 12, 10),
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(12, 6, 12, 8),
                 Effect = new DropShadowEffect
                 {
                     Color = Colors.Black,
-                    BlurRadius = 20,
-                    ShadowDepth = 5,
+                    BlurRadius = 18,
+                    ShadowDepth = 4,
                     Opacity = 0.55
                 }
             };
 
             var mainGrid = new Grid();
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(18, GridUnitType.Pixel) }); // Row 0: Top actions
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(16, GridUnitType.Pixel) }); // Row 0: Top actions
             mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });   // Row 1: Content body
 
             var fontIcons = new FontFamily("Segoe MDL2 Assets, Segoe UI Symbol");
@@ -126,12 +126,12 @@ namespace CountdownWidget
             _txtDaysNumber = new TextBlock
             {
                 FontFamily = fontBahnschrift,
-                FontSize = 92,
+                FontSize = 74,
                 FontWeight = FontWeights.Bold,
                 Foreground = _theme.AccentBrush,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, -4, 0, 0)
+                Margin = new Thickness(0, -3, 0, 0)
             };
             Grid.SetColumn(_txtDaysNumber, 0);
             bodyGrid.Children.Add(_txtDaysNumber);
@@ -158,7 +158,7 @@ namespace CountdownWidget
             _txtEventName = new TextBlock
             {
                 FontFamily = fontBahnschrift,
-                FontSize = 14,
+                FontSize = 13,
                 FontWeight = FontWeights.Bold,
                 Foreground = _theme.TextPrimaryBrush,
                 TextTrimming = TextTrimming.CharacterEllipsis,
@@ -171,7 +171,7 @@ namespace CountdownWidget
             {
                 Text = "\uE787",
                 FontFamily = fontIcons,
-                FontSize = 10,
+                FontSize = 9.5,
                 Foreground = _theme.TextSecondaryBrush,
                 Margin = new Thickness(0, 1, 4, 0),
                 VerticalAlignment = VerticalAlignment.Center
@@ -179,7 +179,7 @@ namespace CountdownWidget
             _txtTargetDate = new TextBlock
             {
                 FontFamily = fontBahnschrift,
-                FontSize = 10,
+                FontSize = 9.5,
                 Foreground = _theme.TextSecondaryBrush,
                 TextTrimming = TextTrimming.CharacterEllipsis,
                 VerticalAlignment = VerticalAlignment.Center
@@ -198,19 +198,19 @@ namespace CountdownWidget
             {
                 Text = "DAYS",
                 FontFamily = fontBahnschrift,
-                FontSize = 27,
+                FontSize = 22,
                 FontWeight = FontWeights.Bold,
                 Foreground = _theme.TextPrimaryBrush,
-                Margin = new Thickness(0, 0, 0, -4)
+                Margin = new Thickness(0, 0, 0, -3)
             };
             _txtDaysLine2 = new TextBlock
             {
                 Text = "LEFT",
                 FontFamily = fontBahnschrift,
-                FontSize = 27,
+                FontSize = 22,
                 FontWeight = FontWeights.Bold,
                 Foreground = _theme.TextPrimaryBrush,
-                Margin = new Thickness(0, -4, 0, 0)
+                Margin = new Thickness(0, -3, 0, 0)
             };
             bottomText.Children.Add(_txtDaysLine1);
             bottomText.Children.Add(_txtDaysLine2);
@@ -370,15 +370,15 @@ namespace CountdownWidget
             // Dynamic number sizing for 1-2 digits, 3 digits, or 4+ digits
             if (absDays >= 1000)
             {
-                _txtDaysNumber.FontSize = 42;
+                _txtDaysNumber.FontSize = 35;
             }
             else if (absDays >= 100)
             {
-                _txtDaysNumber.FontSize = 60;
+                _txtDaysNumber.FontSize = 50;
             }
             else
             {
-                _txtDaysNumber.FontSize = 92;
+                _txtDaysNumber.FontSize = 74;
             }
 
             if (days > 0)

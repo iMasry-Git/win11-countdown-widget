@@ -71,7 +71,7 @@ if (-not $makeAppx) {
 
 if (-not $makeAppx) {
     Write-Host ""
-    Write-Host "[NOTE] MakeAppx.exe (Windows 10/11 SDK) was not detected on this machine." -ForegroundColor Yellow
+    Write-Host "[NOTE] MakeAppx.exe (Windows SDK) was not detected on this machine." -ForegroundColor Yellow
     Write-Host "The layout folder has been prepared at:" -ForegroundColor Cyan
     Write-Host "  $layoutDir"
     Write-Host ""

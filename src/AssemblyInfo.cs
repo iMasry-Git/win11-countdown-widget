@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Windows 11 Desktop Countdown Widget")]
-[assembly: AssemblyDescription("A sleek, lightweight desktop countdown widget designed for Windows 11 and Windows 10")]
+[assembly: AssemblyDescription("A sleek, lightweight desktop countdown widget designed for Windows 11")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("iMasry")]
 [assembly: AssemblyProduct("CountdownWidget")]

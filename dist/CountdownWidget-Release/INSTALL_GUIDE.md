@@ -1,16 +1,16 @@
 # Windows 11 Desktop Countdown Widget - Installation & User Guide
 
-A lightweight, portable countdown widget designed specifically for Windows 11 and Windows 10. It sits directly on your desktop wallpaper under all open application windows and shows how many days remain until your event.
+A lightweight, portable countdown widget designed specifically for Windows 11. It sits directly on your desktop wallpaper under all open application windows and shows how many days remain until your event.
 
 ---
 
 ## 1. System Requirements & Prerequisites
 
 ### Minimum Requirements:
-- **Operating System**: Windows 11 or Windows 10 (Version 1607 or newer).
+- **Operating System**: Windows 11 (all editions).
 - **Architecture**: 64-bit or 32-bit.
 - **Framework**: **Microsoft .NET Framework 4.6.2, 4.7.x, or 4.8**.
-  - *Note*: .NET Framework 4.8 comes **pre-installed by default** on virtually all Windows 10 and 11 installations. Under normal circumstances, you do not need to install anything.
+  - *Note*: .NET Framework 4.8 comes **pre-installed by default** on Windows 11. Under normal circumstances, you do not need to install anything.
 
 ### If .NET Framework is Missing:
 If running on a stripped or custom Windows edition that lacks .NET Framework 4.8:

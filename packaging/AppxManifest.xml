@@ -21,11 +21,11 @@
     <DisplayName>Windows 11 Desktop Countdown Widget</DisplayName>
     <PublisherDisplayName>iMasry</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
-    <Description>A sleek, lightweight desktop countdown widget designed for Windows 11 and Windows 10</Description>
+    <Description>A sleek, lightweight desktop countdown widget designed for Windows 11</Description>
   </Properties>
 
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.22621.0" />
   </Dependencies>
 
   <Capabilities>
@@ -39,7 +39,7 @@
       EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="Countdown Widget"
-        Description="A sleek, lightweight desktop countdown widget designed for Windows 11 and Windows 10"
+        Description="A sleek, lightweight desktop countdown widget designed for Windows 11"
         BackgroundColor="#222326"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">

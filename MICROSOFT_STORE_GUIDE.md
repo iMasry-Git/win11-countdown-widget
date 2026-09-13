@@ -39,7 +39,7 @@ Microsoft Store now supports two different submission models for Win32 apps:
 We have created an automated packaging pipeline in this repository under [`packaging/`](packaging/):
 
 ### Method 1: Automated Cloud Build via GitHub Actions (Easiest — Zero Local Setup)
-GitHub Actions includes the full Windows 10/11 SDK (`MakeAppx.exe`, `SignTool.exe`) pre-installed on its `windows-latest` runners.
+GitHub Actions includes the full Windows SDK (`MakeAppx.exe`, `SignTool.exe`) pre-installed on its `windows-latest` runners.
 
 1. Push your code or tag to GitHub:
    ```bash
@@ -65,7 +65,7 @@ If you prefer a local GUI without installing the large Windows SDK:
 ---
 
 ### Method 3: Command-Line with Windows SDK (`MakeAppx.exe`)
-If you have the Windows 10/11 SDK installed:
+If you have the Windows SDK installed:
 
 1. **Prepare Layout & Assets**:
    ```powershell
@@ -123,7 +123,7 @@ When your app name is reserved, Microsoft assigns your app a unique identity:
      <DisplayName>Windows 11 Desktop Countdown Widget</DisplayName>
      <PublisherDisplayName>YOUR_PARTNER_CENTER_DISPLAY_NAME</PublisherDisplayName>
      <Logo>Assets\StoreLogo.png</Logo>
-     <Description>A sleek, lightweight desktop countdown widget designed for Windows 11 and Windows 10</Description>
+     <Description>A sleek, lightweight desktop countdown widget designed for Windows 11</Description>
    </Properties>
    ```
 4. Re-run packaging (or let GitHub Actions package it with these updated values).
@@ -155,7 +155,7 @@ Click **Start your submission** in Partner Center and fill out each section:
 #### 5. Store Listings (English - United States)
 - **Product description**:
   ```text
-  A sleek, lightweight desktop countdown widget designed for Windows 11 and Windows 10.
+  A sleek, lightweight desktop countdown widget designed for Windows 11.
   It sits quietly on your desktop wallpaper underneath all open application windows, displaying the exact number of days remaining until your event.
 
   Features:

@@ -27,7 +27,7 @@ If running on a stripped or custom Windows edition that lacks .NET Framework 4.8
 ## 2. Installation Options
 
 ### Option A: Standard Installation (Recommended)
-1. Extract the `CountdownWidget-v1.1-Windows.zip` archive anywhere on the computer.
+1. Extract the `CountdownWidget-v1.2-Windows.zip` archive anywhere on the computer.
 2. Double-click **`Install.cmd`**.
 3. The installer will:
    - Copy `CountdownWidget.exe` to `%LOCALAPPDATA%\Programs\CountdownWidget\`

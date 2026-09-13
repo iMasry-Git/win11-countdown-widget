@@ -7,7 +7,7 @@ It sits directly on your desktop wallpaper **underneath all open application win
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2011%20%7C%2010-0078D4?logo=windows)](https://github.com/iMasry-Git/win11-countdown-widget)
 [![Framework](https://img.shields.io/badge/.NET%20Framework-4.8%2B-512BD4?logo=dotnet)](https://dotnet.microsoft.com/download/dotnet-framework/net48)
-[![Release: v1.1.0](https://img.shields.io/badge/Release-v1.1.0-blue?logo=github)](https://github.com/iMasry-Git/win11-countdown-widget/releases)
+[![Release: v1.2.0](https://img.shields.io/badge/Release-v1.2.0-blue?logo=github)](https://github.com/iMasry-Git/win11-countdown-widget/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero%20External-success)](#)
 
@@ -39,7 +39,7 @@ It sits directly on your desktop wallpaper **underneath all open application win
 Pre-built binaries and distribution packages are available in the [`dist/`](dist/) folder:
 
 ### Option 1: Standard Installation (Recommended)
-1. Download or extract [`CountdownWidget-v1.1-Windows.zip`](dist/CountdownWidget-v1.1-Windows.zip).
+1. Download or extract [`CountdownWidget-v1.2-Windows.zip`](dist/CountdownWidget-v1.2-Windows.zip).
 2. Double-click **`Install.cmd`**.
 3. It will install the application to `%LOCALAPPDATA%\Programs\CountdownWidget\` and create **Desktop** & **Start Menu** shortcuts.
 

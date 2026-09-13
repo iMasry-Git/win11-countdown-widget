@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows;
 using Forms = System.Windows.Forms;
 
@@ -157,6 +158,9 @@ namespace CountdownWidget
             };
         }
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern bool DestroyIcon(IntPtr handle);
+
         private static Icon GenerateTrayIcon()
         {
             using (var bmp = new Bitmap(32, 32))
@@ -176,7 +180,19 @@ namespace CountdownWidget
                 }
 
                 IntPtr hIcon = bmp.GetHicon();
-                return Icon.FromHandle(hIcon);
+                try
+                {
+                    // Clone the icon so the managed copy owns its own resources,
+                    // then destroy the unmanaged handle to prevent a GDI leak.
+                    using (var tempIcon = Icon.FromHandle(hIcon))
+                    {
+                        return (Icon)tempIcon.Clone();
+                    }
+                }
+                finally
+                {
+                    DestroyIcon(hIcon);
+                }
             }
         }
 

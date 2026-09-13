@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using CountdownWidget;
 
@@ -72,6 +72,31 @@ namespace CountdownWidget.Tests
                 else
                 {
                     Console.WriteLine("PASS: Days-only countdown calculation");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("FAIL: " + ex.Message);
+                failed++;
+            }
+
+            // Test 4: Special characters and colons in event name (JSON parser & escape fix)
+            try
+            {
+                var cfg = new WidgetConfig();
+                cfg.EventName = "Sprint Review: Part 1 \"Final\" & Demo";
+                cfg.TargetDate = DateTime.Today.AddDays(10);
+                ConfigManager.Save(cfg);
+
+                var loaded = ConfigManager.Load();
+                if (loaded.EventName != "Sprint Review: Part 1 \"Final\" & Demo")
+                {
+                    Console.WriteLine("FAIL: Special characters in EventName mismatch: " + loaded.EventName);
+                    failed++;
+                }
+                else
+                {
+                    Console.WriteLine("PASS: Special characters and colons in EventName handled correctly");
                 }
             }
             catch (Exception ex)

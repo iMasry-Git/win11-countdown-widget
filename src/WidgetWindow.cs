@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -15,6 +15,7 @@ namespace CountdownWidget
         private WidgetConfig _config;
         private WidgetTheme _theme;
         private DispatcherTimer _timer;
+        private DispatcherTimer _saveDebounceTimer;
         private IntPtr _hwnd = IntPtr.Zero;
 
         private Border _rootBorder;
@@ -32,11 +33,21 @@ namespace CountdownWidget
             RestorePosition();
             UpdateCountdown();
 
-            // Refresh countdown periodically (once every 10 minutes or on date change)
+            // Refresh countdown periodically
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMinutes(1);
             _timer.Tick += (s, e) => UpdateCountdown();
             _timer.Start();
+
+            // Debounce position saves: wait 500ms after the last move before writing to disk.
+            // This prevents hundreds of disk writes during a single DragMove() operation.
+            _saveDebounceTimer = new DispatcherTimer();
+            _saveDebounceTimer.Interval = TimeSpan.FromMilliseconds(500);
+            _saveDebounceTimer.Tick += (s, e) =>
+            {
+                _saveDebounceTimer.Stop();
+                FlushPositionToDisk();
+            };
 
             SourceInitialized += OnSourceInitialized;
             Activated += (s, e) => EnsureDesktopLayer();
@@ -335,10 +346,20 @@ namespace CountdownWidget
         {
             if (WindowState == WindowState.Normal)
             {
+                // Update in-memory config immediately (cheap)
                 _config.WindowX = Left;
                 _config.WindowY = Top;
-                ConfigManager.Save(_config);
+
+                // Restart the debounce timer — only writes to disk once
+                // 500ms after the last position change (end of drag).
+                _saveDebounceTimer.Stop();
+                _saveDebounceTimer.Start();
             }
+        }
+
+        private void FlushPositionToDisk()
+        {
+            ConfigManager.Save(_config);
         }
 
         public void OpenSettings()

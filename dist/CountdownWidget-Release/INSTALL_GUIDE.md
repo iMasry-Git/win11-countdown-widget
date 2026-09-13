@@ -1,4 +1,4 @@
-﻿# Windows 11 Desktop Countdown Widget - Installation & User Guide
+# Windows 11 Desktop Countdown Widget - Installation & User Guide
 
 A lightweight, portable countdown widget designed specifically for Windows 11 and Windows 10. It sits directly on your desktop wallpaper under all open application windows and shows how many days remain until your event.
 
@@ -27,7 +27,7 @@ If running on a stripped or custom Windows edition that lacks .NET Framework 4.8
 ## 2. Installation Options
 
 ### Option A: Standard Installation (Recommended)
-1. Extract the `CountdownWidget-v1.0-Windows.zip` archive anywhere on the computer.
+1. Extract the `CountdownWidget-v1.1-Windows.zip` archive anywhere on the computer.
 2. Double-click **`Install.cmd`**.
 3. The installer will:
    - Copy `CountdownWidget.exe` to `%LOCALAPPDATA%\Programs\CountdownWidget\`

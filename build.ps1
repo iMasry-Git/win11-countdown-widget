@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $srcDir = Join-Path $projectRoot "src"
@@ -28,7 +28,8 @@ $refs = @(
     (Join-Path $fxDir "System.dll"),
     (Join-Path $fxDir "System.Core.dll"),
     (Join-Path $fxDir "System.Drawing.dll"),
-    (Join-Path $fxDir "System.Windows.Forms.dll")
+    (Join-Path $fxDir "System.Windows.Forms.dll"),
+    (Join-Path $fxDir "System.Web.Extensions.dll")
 )
 
 $refArgs = $refs | ForEach-Object { "/r:`"$_`"" }

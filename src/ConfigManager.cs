@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 using System.Globalization;
+using System.Collections.Generic;
+using System.Web.Script.Serialization;
 
 namespace CountdownWidget
 {
@@ -28,6 +30,22 @@ namespace CountdownWidget
         }
     }
 
+    /// <summary>
+    /// Intermediate DTO for JSON serialization.
+    /// JSON has no NaN literal, so WindowX/WindowY use a sentinel value (-99999).
+    /// TargetDate is stored as an ISO "yyyy-MM-dd" string for clarity.
+    /// </summary>
+    internal class ConfigDto
+    {
+        public string EventName { get; set; }
+        public string TargetDate { get; set; }
+        public double WindowX { get; set; }
+        public double WindowY { get; set; }
+        public bool IsLocked { get; set; }
+        public bool StartWithWindows { get; set; }
+        public bool IsFirstRun { get; set; }
+    }
+
     public static class ConfigManager
     {
         private static readonly string ConfigDir = Path.Combine(
@@ -36,6 +54,10 @@ namespace CountdownWidget
         );
 
         private static readonly string ConfigFile = Path.Combine(ConfigDir, "config.json");
+
+        private static readonly JavaScriptSerializer _serializer = new JavaScriptSerializer();
+
+        private const double NAN_SENTINEL = -99999.0;
 
         public static WidgetConfig Load()
         {
@@ -49,7 +71,7 @@ namespace CountdownWidget
                 }
 
                 string json = File.ReadAllText(ConfigFile, Encoding.UTF8);
-                return ParseJson(json);
+                return FromDto(_serializer.Deserialize<ConfigDto>(json));
             }
             catch (Exception ex)
             {
@@ -67,7 +89,7 @@ namespace CountdownWidget
                     Directory.CreateDirectory(ConfigDir);
                 }
 
-                string json = ToJson(config);
+                string json = _serializer.Serialize(ToDto(config));
                 File.WriteAllText(ConfigFile, json, Encoding.UTF8);
             }
             catch (Exception ex)
@@ -76,85 +98,42 @@ namespace CountdownWidget
             }
         }
 
-        private static string Escape(string s)
+        private static ConfigDto ToDto(WidgetConfig c)
         {
-            if (s == null) return "";
-            return s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "").Replace("\n", "\\n");
+            return new ConfigDto
+            {
+                EventName = c.EventName ?? "",
+                TargetDate = c.TargetDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                WindowX = double.IsNaN(c.WindowX) ? NAN_SENTINEL : c.WindowX,
+                WindowY = double.IsNaN(c.WindowY) ? NAN_SENTINEL : c.WindowY,
+                IsLocked = c.IsLocked,
+                StartWithWindows = c.StartWithWindows,
+                IsFirstRun = c.IsFirstRun
+            };
         }
 
-        private static string Unescape(string s)
-        {
-            if (s == null) return "";
-            return s.Replace("\\n", "\n").Replace("\\\"", "\"").Replace("\\\\", "\\");
-        }
-
-        private static string ToJson(WidgetConfig c)
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine("{");
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "  \"EventName\": \"{0}\",", Escape(c.EventName)));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "  \"TargetDate\": \"{0}\",", c.TargetDate.ToString("yyyy-MM-dd")));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "  \"WindowX\": {0},", double.IsNaN(c.WindowX) ? -99999.0 : c.WindowX));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "  \"WindowY\": {0},", double.IsNaN(c.WindowY) ? -99999.0 : c.WindowY));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "  \"IsLocked\": {0},", c.IsLocked.ToString().ToLowerInvariant()));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "  \"StartWithWindows\": {0},", c.StartWithWindows.ToString().ToLowerInvariant()));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "  \"IsFirstRun\": {0}", c.IsFirstRun.ToString().ToLowerInvariant()));
-            sb.AppendLine("}");
-            return sb.ToString();
-        }
-
-        private static WidgetConfig ParseJson(string json)
+        private static WidgetConfig FromDto(ConfigDto d)
         {
             var c = new WidgetConfig();
-            string[] lines = json.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var rawLine in lines)
+
+            if (d == null) return c;
+
+            c.EventName = d.EventName ?? c.EventName;
+
+            DateTime td;
+            if (!string.IsNullOrEmpty(d.TargetDate) &&
+                (DateTime.TryParse(d.TargetDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out td) ||
+                 DateTime.TryParse(d.TargetDate, out td)))
             {
-                string line = rawLine.Trim().TrimEnd(',');
-                int colonIdx = line.IndexOf(':');
-                if (colonIdx <= 0) continue;
-
-                string key = line.Substring(0, colonIdx).Trim().Trim('"');
-                string val = line.Substring(colonIdx + 1).Trim();
-                bool isString = val.StartsWith("\"") && val.EndsWith("\"");
-                string cleanVal = isString ? val.Substring(1, val.Length - 2) : val;
-
-                switch (key)
-                {
-                    case "EventName":
-                        c.EventName = Unescape(cleanVal);
-                        break;
-                    case "TargetDate":
-                        DateTime td;
-                        if (DateTime.TryParse(cleanVal, CultureInfo.InvariantCulture, DateTimeStyles.None, out td) ||
-                            DateTime.TryParse(cleanVal, out td))
-                        {
-                            c.TargetDate = td.Date;
-                        }
-                        break;
-                    case "WindowX":
-                        double x;
-                        if (double.TryParse(cleanVal, NumberStyles.Any, CultureInfo.InvariantCulture, out x))
-                            c.WindowX = (x <= -90000) ? double.NaN : x;
-                        break;
-                    case "WindowY":
-                        double y;
-                        if (double.TryParse(cleanVal, NumberStyles.Any, CultureInfo.InvariantCulture, out y))
-                            c.WindowY = (y <= -90000) ? double.NaN : y;
-                        break;
-                    case "IsLocked":
-                        bool l;
-                        if (bool.TryParse(cleanVal, out l)) c.IsLocked = l;
-                        break;
-                    case "StartWithWindows":
-                        bool sw;
-                        if (bool.TryParse(cleanVal, out sw)) c.StartWithWindows = sw;
-                        break;
-                    case "IsFirstRun":
-                        bool fr;
-                        if (bool.TryParse(cleanVal, out fr)) c.IsFirstRun = fr;
-                        break;
-                }
+                c.TargetDate = td.Date;
             }
+
+            c.WindowX = (d.WindowX <= -90000) ? double.NaN : d.WindowX;
+            c.WindowY = (d.WindowY <= -90000) ? double.NaN : d.WindowY;
+            c.IsLocked = d.IsLocked;
+            c.StartWithWindows = d.StartWithWindows;
+            c.IsFirstRun = d.IsFirstRun;
+
             return c;
         }
     }

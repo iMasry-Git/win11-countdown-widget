@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  IgnorableNamespaces="uap rescap desktop">
+
+  <!-- 
+    NOTE FOR MICROSOFT STORE SUBMISSION:
+    Replace 'Name', 'Publisher', and 'PublisherDisplayName' with the exact values
+    assigned to your app in Microsoft Partner Center (App management -> App identity).
+  -->
+  <Identity
+    Name="iMasry.Windows11CountdownWidget"
+    ProcessorArchitecture="neutral"
+    Publisher="CN=iMasry"
+    Version="1.2.0.0" />
+
+  <Properties>
+    <DisplayName>Windows 11 Desktop Countdown Widget</DisplayName>
+    <PublisherDisplayName>iMasry</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>A sleek, lightweight desktop countdown widget designed for Windows 11 and Windows 10</Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <Capabilities>
+    <!-- Centennial Win32 Desktop Bridge capability -->
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+
+  <Applications>
+    <Application Id="CountdownWidget"
+      Executable="CountdownWidget.exe"
+      EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Countdown Widget"
+        Description="A sleek, lightweight desktop countdown widget designed for Windows 11 and Windows 10"
+        BackgroundColor="#222326"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="Countdown">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#222326" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+</Package>

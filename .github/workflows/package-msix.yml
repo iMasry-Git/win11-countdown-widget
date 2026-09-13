@@ -1,0 +1,82 @@
+name: Build & Package MSIX
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-msix:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build CountdownWidget executable
+        shell: powershell
+        run: |
+          .\build.ps1
+
+      - name: Run Test Suite
+        shell: powershell
+        run: |
+          $csc = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+          $wpfDir = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\WPF"
+          $fxDir = Split-Path -Parent $wpfDir
+          $refs = @(
+              (Join-Path $wpfDir "PresentationFramework.dll"),
+              (Join-Path $wpfDir "PresentationCore.dll"),
+              (Join-Path $wpfDir "WindowsBase.dll"),
+              (Join-Path $fxDir "System.dll"),
+              (Join-Path $fxDir "System.Core.dll"),
+              (Join-Path $fxDir "System.Drawing.dll"),
+              (Join-Path $fxDir "System.Web.Extensions.dll")
+          )
+          $refArgs = $refs | ForEach-Object { "/r:`"$_`"" }
+          $srcs = @("tests\TestConfigAndLogic.cs", "src\ConfigManager.cs", "src\Themes.cs", "src\Win32Helper.cs", "src\Logger.cs")
+          & $csc /target:exe /out:bin\TestConfigAndLogic.exe /nologo $refArgs $srcs
+          & bin\TestConfigAndLogic.exe
+
+      - name: Package MSIX with Windows SDK
+        shell: powershell
+        run: |
+          # Locate MakeAppx in Windows SDK
+          $makeAppx = (Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1).FullName
+          Write-Host "Using MakeAppx from: $makeAppx"
+
+          # Prepare layout
+          powershell -ExecutionPolicy Bypass -File packaging\Package-MSIX.ps1
+
+          # Pack MSIX
+          & $makeAppx pack /d dist\msix-layout /p dist\CountdownWidget.msix /o
+          Write-Host "MSIX package created: dist\CountdownWidget.msix"
+
+      - name: Self-Sign MSIX for Testing
+        shell: powershell
+        run: |
+          $signTool = (Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe" | Sort-Object FullName -Descending | Select-Object -First 1).FullName
+          Write-Host "Using SignTool from: $signTool"
+
+          # Generate self-signed certificate
+          $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=iMasry" `
+              -KeyUsage DigitalSignature -FriendlyName "Countdown Widget CI" `
+              -CertStoreLocation "Cert:\CurrentUser\My" `
+              -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3")
+
+          $pwd = ConvertTo-SecureString -String "StorePassword123" -Force -AsPlainText
+          Export-PfxCertificate -Cert $cert -FilePath dist\ci_cert.pfx -Password $pwd | Out-Null
+
+          # Sign package
+          & $signTool sign /fd SHA256 /a /f dist\ci_cert.pfx /p "StorePassword123" dist\CountdownWidget.msix
+          Write-Host "Package signed with test certificate."
+
+      - name: Upload MSIX Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CountdownWidget-MSIX
+          path: dist/CountdownWidget.msix
+          retention-days: 30

@@ -47,6 +47,10 @@ Pre-built binaries and distribution packages are available in the [`dist/`](dist
 1. Double-click **`CountdownWidget.exe`** (or `Run_Portable.cmd`).
 2. Run directly from any folder or USB drive. Preferences are automatically saved in `%APPDATA%\CountdownWidget\config.json`.
 
+### Option 3: Microsoft Store / MSIX Package
+- Automated MSIX packaging scripts and visual asset generators are provided in [`packaging/`](packaging/).
+- Follow the step-by-step [**Microsoft Store Publishing Guide**](MICROSOFT_STORE_GUIDE.md) for signing, packaging, and publishing to the Microsoft Store.
+
 ---
 
 ## 🖱️ Controls & Shortcuts
